@@ -44,7 +44,7 @@ export const auth = betterAuth({
           products: [
             {
               productId: "8034d9b4-b346-46c4-805e-100bbf39a8c8",
-              slug: "Codesage",
+              slug: "codesagev2",
             },
           ],
           successUrl: process.env.POLAR_SUCCESS_URL || "/dashboard/subscription?success=true",

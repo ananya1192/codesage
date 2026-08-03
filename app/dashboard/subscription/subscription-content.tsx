@@ -169,7 +169,7 @@ const handleUpgrade = async () => {
     setCheckoutLoading(true);
 
     await checkout({
-      slug: "Codesage",
+      slug: "codesagev2",
     });
   } catch (error) {
     console.error("Failed to initiate checkout:", error);
