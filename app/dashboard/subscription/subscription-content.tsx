@@ -21,7 +21,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import Link from "next/link";
 import { getSubscriptionData, syncSubscriptionStatus } from "@/module/payment/action";
 
 const PLAN_FEATURES = {
@@ -208,21 +207,22 @@ return (
         </p>
       </div>
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleSync}
-        disabled={syncLoading}
-      >
-        {syncLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Sync Status
-          </>
-        )}
-      </Button>
+      {isPro && (
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={handleSync}
+    disabled={syncLoading}
+  >{syncLoading ? (
+      <Loader2 className="h-4 w-4 animate-spin" />
+    ) : (
+      <>
+        <RefreshCw className="mr-2 h-4 w-4" />
+        Sync Status
+      </>
+    )}
+  </Button>
+)}
     </div>
 
 
@@ -373,20 +373,12 @@ return (
         ))}
       </div>
 
-     <Button
+    <Button
   className="w-full"
   variant="outline"
-  onClick={handleManageSubscription}
-  disabled={portalLoading}
+  disabled
 >
-  {portalLoading ? (
-    <>
-      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      Opening...
-    </>
-  ) : (
-    isPro ? "Downgrade to Free" : "Current Plan"
-  )}
+  Current Plan
 </Button>
     </CardContent>
   </Card>

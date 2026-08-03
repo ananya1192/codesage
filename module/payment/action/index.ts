@@ -108,9 +108,20 @@ export async function syncSubscriptionStatus() {
         where: { id: session.user.id }
     });
 
-    if (!user || !user.polarCustomerId) {
-        return { success: false, message: "No Polar customer ID found" };
-    }
+    if (!user) {
+    return { 
+        success: false, 
+        message: "User not found" 
+    };
+}
+
+if (!user.polarCustomerId) {
+    return {
+        success: true,
+        status: "FREE",
+        message: "No active subscription found"
+    };
+}
 
     try {
         // Fetch subscriptions from Polar
@@ -123,7 +134,11 @@ export async function syncSubscriptionStatus() {
 
         // Find the most relevant subscription (active or most recent)
         const activeSub = subscriptions.find((sub: any) => sub.status === 'active');
-        const latestSub = subscriptions[0]; // Assuming API returns sorted or we should sort
+       const latestSub = subscriptions.sort(
+    (a: any, b: any) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime()
+)[0];
 
         if (activeSub) {
             await updateUserTier(user.id, "PRO", "ACTIVE", activeSub.id);
@@ -140,7 +155,12 @@ export async function syncSubscriptionStatus() {
 
         return { success: true, status: "NO_SUBSCRIPTION" };
     } catch (error) {
-        console.error("Failed to sync subscription:", error);
-        return { success: false, error: "Failed to sync with Polar" };
-    }
+    console.error("Failed to sync subscription:", error);
+
+    return {
+        success: false,
+        status: "ERROR",
+        message: "Failed to sync with Polar"
+    };
+}
 }
