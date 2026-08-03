@@ -28,7 +28,11 @@ export const auth = betterAuth({
     }
   },
 
-  trustedOrigins:["http://localhost:3000","https://whacky-emote-quilt.ngrok-free.dev"],
+  trustedOrigins: [
+  "http://localhost:3000",
+  "https://whacky-emote-quilt.ngrok-free.dev",
+  "https://codesage-ten.vercel.app"
+],
 
   plugins: [
     polar({
