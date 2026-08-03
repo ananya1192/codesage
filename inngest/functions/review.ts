@@ -1,9 +1,18 @@
 import { inngest } from "../client";
-import { getPullRequestDiff, postReviewComment } from "@/module/github/lib/github";
 import { retrieveContext } from "@/module/ai/lib/rag";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import prisma from "@/lib/db";
+import {
+  checkAIRateLimit,
+  incrementAIRateLimit,
+} from "@/module/payment/lib/subscription";
+import {
+  getPullRequestDiff,
+  getPullRequestDetails,
+  getCompareDiff,
+  postReviewComment,
+} from "@/module/github/lib/github";
 
 export const generateReview = inngest.createFunction(
   {
@@ -15,8 +24,16 @@ export const generateReview = inngest.createFunction(
   },
 
   async ({ event, step }) => {
-    const { owner, repo, prNumber, userId } = event.data;
-
+    const {
+    owner,
+    repo,
+   prNumber,
+   userId,
+   action,
+   before,
+   after,
+} = event.data;
+    //const { owner, repo, prNumber, userId } = event.data;
     const { diff, title, description, token } = await step.run("fetch-pr-data", async () => {
 
       const account = await prisma.account.findFirst({
@@ -30,17 +47,84 @@ export const generateReview = inngest.createFunction(
         throw new Error("No GitHub access token found");
       }
 
-      const data = await getPullRequestDiff(account.accessToken, owner, repo, prNumber);
-      return { ...data, token: account.accessToken }
-    });
+      let diff = "";
+let title = "";
+let description = "";
 
+if (action === "opened") {
+  const data = await getPullRequestDiff(
+    account.accessToken,
+    owner,
+    repo,
+    prNumber
+  );
+
+  diff = data.diff;
+  title = data.title;
+  description = data.description;
+}
+
+else if (
+  action === "synchronize" &&
+  before &&
+  after
+) 
+{
+  const compare = await getCompareDiff(
+    account.accessToken,
+    owner,
+    repo,
+    before,
+    after
+  );
+
+  diff = compare.files
+    .map(
+      (file: any) =>
+        `File: ${file.filename}\n${file.patch ?? ""}`
+    )
+    .join("\n\n");
+
+  const pr = await getPullRequestDetails(
+  account.accessToken,
+  owner,
+  repo,
+  prNumber
+);
+
+title = pr.title;
+description = pr.description;
+
+  
+}
+
+
+ else {
+  throw new Error(`Unsupported PR action: ${action}`);
+}
+
+
+return {
+  diff,
+  title,
+  description,
+  token: account.accessToken,
+};
+    });
+ console.log("Action:", action);
+console.log("Diff length:", diff.length);
+console.log(diff);
 
     const context = await step.run("retrieve-context", async () => {
       const query = `${title}\n${description}`;
 
       return await retrieveContext(query, `${owner}/${repo}`)
     });
+    
 
+    await step.run("check-rate-limit", async () => {
+    await checkAIRateLimit(userId);
+    });
 
     const review = await step.run("generate-ai-review", async () => {
       const prompt = `You are an expert code reviewer. Analyze the following pull request and provide a detailed, constructive code review.
@@ -67,18 +151,29 @@ Please provide:
 
 Format your response in markdown.`;
 
+console.log("Prompt characters:", prompt.length);
+console.log(
+  "Estimated tokens:",
+  Math.ceil(prompt.length / 4)
+);
+
+const start = Date.now();
+
       const { text } = await generateText({
-        model: google("gemini-3.6-flash"),
-        prompt
-      })
+  model: google("gemini-3.6-flash"),
+  prompt,
+});
+
+console.log(
+  "AI generation time:",
+  Date.now() - start,
+  "ms"
+);
 
       return text
     });
 
-    await step.run("post-comment" , async ()=>{
-      await postReviewComment(token , owner , repo , prNumber , review)
-    })
-
+  
 
     await step.run("save-review" , async()=>{
       const repository = await prisma.repository.findFirst({
@@ -101,6 +196,19 @@ Format your response in markdown.`;
         });
       }
     })
+
+    await step.run("increment-rate-limit", async () => {
+  await incrementAIRateLimit(userId);
+});
+
+  await step.run("post-comment", async () => {
+  try {
+    await postReviewComment(token, owner, repo, prNumber, review);
+  } catch (error) {
+    console.error("Failed to post GitHub comment:", error);
+  }
+});
+
 return {success:true}
   }
 )

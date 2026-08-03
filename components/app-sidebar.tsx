@@ -20,6 +20,7 @@ import { Avatar , AvatarFallback , AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu , DropdownMenuContent , DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import Logout from '@/module/auth/components/logout';
+import { signOut } from "@/lib/auth-client";
 
 export const AppSidebar = () => {
  const{theme, setTheme} = useTheme();
@@ -162,7 +163,7 @@ export const AppSidebar = () => {
         align="end" 
         side="right"
         sideOffset={8}>
-          {/* Dropdown items go here */}
+        
          <div className="border-y px-2 py-3">
   <DropdownMenuItem
     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -182,11 +183,26 @@ export const AppSidebar = () => {
   
   </DropdownMenuItem>
 
-  <DropdownMenuItem
-  className="my-1 cursor-pointer rounded-md px-3 py-3 font-medium text-red-600 transition-colors hover:bg-red-500/10"
+<DropdownMenuItem
+  className="my-1 cursor-pointer rounded-md px-3 py-3 font-medium text-red-600 hover:bg-red-500/10"
+  onClick={async () => {
+    console.log("Calling signOut...");
+
+    await signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          console.log("Signed out successfully");
+          window.location.href = "/login";
+        },
+        onError: (ctx) => {
+          console.error("Sign out failed:", ctx);
+        },
+      },
+    });
+  }}
 >
   <LogOut className="mr-3 h-5 w-5 shrink-0" />
-  <Logout>Sign Out</Logout>
+  Sign Out
 </DropdownMenuItem>
 </div>
         </DropdownMenuContent>

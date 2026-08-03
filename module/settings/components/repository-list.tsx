@@ -1,59 +1,3 @@
-/*import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import {
-  getConnectedRepositories,
-  disconnectRepository,
-  disconnectAllRepository,
-} from "@/module/settings/actions";
-import { toast } from "sonner";
-import {
-  ExternalLink,
-  Trash2,
-  AlertTriangle,
-} from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { useState } from "react";
-
-export function RepositoryList() {
-  const queryClient = useQueryClient();
-
-  const [disconnectAllOpen, setDisconnectAllOpen] = useState(false);
-
-  const { data: repositories, isLoading } = useQuery({
-    queryKey: ["connected-repositories"],
-    queryFn: async () => await getConnectedRepositories(),
-    staleTime: 1000 * 60 * 2,
-    refetchOnWindowFocus: false,
-  });
-
-  const disconnectMutation = useMutation({
-    mutationFn: async (repositoryId: string) => {
-      return await disconnectRepository(repositoryId);
-    },
-  });
-  */
 "use client";
 
 import { useState } from "react";
@@ -199,52 +143,45 @@ export function RepositoryList() {
           </div>
 
           {repositories && repositories.length > 0 && (
-            <AlertDialog
-              open={disconnectAllOpen}
-              onOpenChange={setDisconnectAllOpen}
-            >
-            <AlertDialogTrigger>
-  <Button variant="destructive" size="sm">
-    <Trash2 className="mr-2 h-4 w-4" />
-    Disconnect All
-  </Button>
+  <AlertDialog>
+    <AlertDialogTrigger className="inline-flex items-center gap-2 rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground">
+  <Trash2 className="h-4 w-4" />
+  Disconnect All
 </AlertDialogTrigger>
 
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Disconnect All Repositories?
-                  </AlertDialogTitle>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>
+          Disconnect All Repositories?
+        </AlertDialogTitle>
 
-                  <AlertDialogDescription>
-                    This will disconnect all {repositories.length} repositories
-                    and delete all associated AI reviews.
-                    This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
+        <AlertDialogDescription>
+          This will disconnect all {repositories.length} repositories
+          and delete all associated AI reviews.
+          This action cannot be undone.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
 
-                <AlertDialogFooter>
-                  <AlertDialogCancel>
-                    Cancel
-                  </AlertDialogCancel>
+      <AlertDialogFooter>
+        <AlertDialogCancel>
+          Cancel
+        </AlertDialogCancel>
 
-                  <AlertDialogAction
-                    onClick={() =>
-                      disconnectAllMutation.mutate()
-                    }
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    disabled={
-                      disconnectAllMutation.isPending
-                    }
-                  >
-                    {disconnectAllMutation.isPending
-                      ? "Disconnecting..."
-                      : "Disconnect All"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
+        <AlertDialogAction
+          onClick={() =>
+            disconnectAllMutation.mutate()
+          }
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          disabled={disconnectAllMutation.isPending}
+        >
+          {disconnectAllMutation.isPending
+            ? "Disconnecting..."
+            : "Disconnect All"}
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+)}
         </div>
       </CardHeader>
 

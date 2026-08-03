@@ -123,6 +123,7 @@ const { data } = await octokit.rest.repos.createWebhook({
   config: {
     url: webhookUrl,
     content_type: "json",
+    secret: process.env.GITHUB_WEBHOOK_SECRET!,
   },
   events: ["pull_request"],
 });
@@ -241,6 +242,25 @@ export async function getRepoFileContents(
   return files;
 }
 
+export async function getPullRequestDetails(
+  token: string,
+  owner: string,
+  repo: string,
+  prNumber: number
+) {
+  const octokit = new Octokit({ auth: token });
+
+  const { data: pr } = await octokit.rest.pulls.get({
+    owner,
+    repo,
+    pull_number: prNumber,
+  });
+
+  return {
+    title: pr.title,
+    description: pr.body || "",
+  };
+}
 
 export async function getPullRequestDiff(
   token: string,
@@ -271,6 +291,27 @@ export async function getPullRequestDiff(
     diff: diff as unknown as string,
     title: pr.title,
     description: pr.body || "",
+  };
+}
+
+export async function getCompareDiff(
+  token: string,
+  owner: string,
+  repo: string,
+  base: string,
+  head: string
+) {
+  const octokit = new Octokit({ auth: token });
+
+  const { data } = await octokit.rest.repos.compareCommits({
+    owner,
+    repo,
+    base,
+    head,
+  });
+
+  return {
+    files: data.files ?? [],
   };
 }
 

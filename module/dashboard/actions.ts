@@ -69,22 +69,37 @@ export async function getDashboardStats() {
         const { data: user } = await octokit.rest.users.getAuthenticated()
 
         // TODO: FETCH TOTAL CONNECTED REPO FROM DB;
-        const totalRepos = 30;
+        //const totalRepos = 30;
+
+        const totalRepos = await prisma.repository.count({
+          where: {
+         userId: session.user.id,
+                },
+              });
 
         //
         const calendar = await fetchUserContribution(token, user.login);
         const totalCommits = calendar?.totalContributions || 0
 
         // Count prs from database or github
-        const { data: prs } = await octokit.rest.search.issuesAndPullRequests({
-            q: `author:${user.login} type:pr`,
-            per_page: 1
-        })
+        
 
-        const totalPRs = prs.total_count
+        const totalPRs = await prisma.review.count({
+    where:{
+        repository:{
+            userId:session.user.id
+        }
+    }
+});
 
         // TODO: COUNT AI REVIEWS FROM DATABASE
-        const totalReviews = 44
+        const totalReviews = await prisma.review.count({
+        where: {
+    repository: {
+      userId: session.user.id,
+          },
+         },
+      });
 
         return {
             totalCommits,
@@ -167,26 +182,19 @@ export async function getMonthlyActivity() {
 
 
         // TODO: REVIEWS'S REAL DATA
-        const generateSampleReviews = () => {
-            const sampleReviews = [];
-            const now = new Date();
-
-            // Generate random reviews over the past 6 months
-            for (let i = 0; i < 45; i++) {
-                const randomDaysAgo = Math.floor(Math.random() * 180); // Random day in last 6 months
-                const reviewDate = new Date(now);
-                reviewDate.setDate(reviewDate.getDate() - randomDaysAgo);
-
-                sampleReviews.push({
-                    createdAt: reviewDate,
-                });
-            }
-
-            return sampleReviews;
-        };
-
-        const reviews = generateSampleReviews()
-
+       const reviews = await prisma.review.findMany({
+  where: {
+    repository: {
+      userId: session.user.id,
+    },
+    createdAt: {
+      gte: sixMonthsAgo,
+    },
+  },
+  select: {
+    createdAt: true,
+  },
+});
         reviews.forEach((review) => {
             const monthKey = monthNames[review.createdAt.getMonth()];
             if (monthlyData[monthKey]) {

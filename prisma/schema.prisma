@@ -13,18 +13,38 @@ model Test {
 }
 
 model User {
-  id            String       @id
+  id            String   @id
   name          String
-  email         String       @unique
-  emailVerified Boolean      @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  accounts      Account[]
-  repositories  Repository[]
-  sessions      Session[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  accounts     Account[]
+  repositories Repository[]
+  sessions     Session[]
+  usage        UserUsage?
+  aiRateLimits AIRateLimit[]
+
+  subscriptionTier    String  @default("FREE")
+  subscriptionStatus  String? // ACTIVE, CANCELLED, EXPIRED
+  polarCustomerId     String? @unique
+  polarSubscriptionID String? @unique
 
   @@map("user")
+}
+
+model UserUsage {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repositoryCount Int      @default(0)
+  reviewCounts    Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("user_usage")
 }
 
 model Repository {
@@ -114,4 +134,23 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model AIRateLimit {
+  id          String @id @default(cuid())
+  userId      String
+  date        String
+  reviewCount Int    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("ai_rate_limit")
+}
+
+model WebhookEvent {
+  id         String   @id
+  event      String
+  repository String
+  createdAt  DateTime @default(now())
 }

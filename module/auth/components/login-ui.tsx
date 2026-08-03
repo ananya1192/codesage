@@ -24,11 +24,11 @@ const LoginUI=() => {
     <div className='min-h-screen bg-linear-to-br from-black via-black to-zinc-900 text-white dark flex'>
         <div className='flex-1 flex flex-col justify-center px-12 py-16'>
           <div className='max-w-lg'>
-            { /*Logo*/ }
+      
             <div className='mb-16'>
               <div className='inline-flex items-center gap-2 text-2xl font-bold'>
                 <div className='w-8 h-8 bg-primary rounded-full'/>
-                <span>myapp</span>
+                <span>CodeSage</span>
               </div>
             </div>
                  <h1 className='text-5xl font-bold mb-6 leading-tight text-balance'>
@@ -43,7 +43,7 @@ const LoginUI=() => {
         <div className='flex-1 flex flex-col justify-center items-center px-12 py-16'>
           <div className='w-full max-w-sm'>
             <div className='mb-12'>
-              <h2 className='text-3xl font-bold mb-2'>Welcome Back</h2>
+              <h2 className='text-3xl font-bold mb-2'>Welcome to CodeSage</h2>
               <p className='text-gray-400'>Login using one of the following providers : </p>
             </div>
             <button
@@ -58,19 +58,21 @@ const LoginUI=() => {
        </button>
 
        <div className='space-y-4 text-center text-sm text-gray-400'>
-           <div>
-            New to myapp?{" "}
-            <a href='#' className='text-primary hover:text-primary-foreground
-            font-semibold'>
-              Sign Up
-            </a>
-           </div>
-           <div>
-            <a href='#' className='text-primary hover:text-primary-foreground
-            font-semibold'>
-              Self-Hosted Services
-            </a>
-           </div>
+        <div>
+  First time using CodeSage?{" "}
+  <button
+    type="button"
+    onClick={() =>
+      signIn.social({
+        provider: "github",
+        callbackURL: "/dashboard",
+      })
+    }
+    className="font-semibold text-primary hover:text-primary-foreground"
+  >
+    Continue with Github
+  </button>
+</div>
        </div>
 
        <div className='mt-12 pt-8 border-t border-gray-700 flex justify-center gap-4

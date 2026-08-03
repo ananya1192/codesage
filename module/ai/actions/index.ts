@@ -2,11 +2,16 @@ import prisma from "@/lib/db";
 import { getPullRequestDiff } from "@/module/github/lib/github";
 import { inngest } from "@/inngest/client";
 import { tr } from "date-fns/locale";
+import { canCreateReview , incrementReviewCount } from "@/module/payment/lib/subscription";
 export async function reviewPullRequest(
   owner: string,
   repo: string,
-  prNumber: number
-) {
+  prNumber: number,
+  action: string,
+  before?: string,
+  after?: string
+)
+ {
 
     try{
   const repository = await prisma.repository.findFirst({
@@ -30,8 +35,19 @@ export async function reviewPullRequest(
   if (!repository) {
     throw new Error(
       `Repository ${owner}/${repo} not found in database. Please reconnect the repository.`
-    );
+    )
   }
+
+  const canReview = await canCreateReview(
+  repository.user.id,
+  repository.id
+);
+
+if (!canReview) {
+  throw new Error(
+    "Review limit reached for this repository. Please upgrade to Pro for unlimited reviews."
+  );
+}
 
   const githubAccount = repository.user.accounts[0];
 
@@ -50,15 +66,23 @@ export async function reviewPullRequest(
     prNumber,
   )
 
-  await inngest.send({
+ 
+
+await inngest.send({
   name: "pr.review.requested",
   data: {
     owner,
     repo,
     prNumber,
     userId: repository.user.id,
+
+    action,
+    before,
+    after,
   },
 });
+
+await incrementReviewCount(repository.user.id,repository.id)
 
 return {
   success: true,

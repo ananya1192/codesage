@@ -52,10 +52,18 @@ return (
           fontSize={14}
           showWeekdayLabels
           showMonthLabels
-          theme={{
-            light: ["hsl(0, 0%, 92%)", "hsl(142, 71%, 45%)"],
-            dark: ["#161b22", "hsl(142, 71%, 45%)"],
-          }}
+       
+
+            theme={{
+  light: [
+    "#ebedf0",
+    "#216e39",
+  ],
+  dark: [
+    "#161b22",
+    "#39d353",
+  ],
+}}
         />
       </div>
     </div>
