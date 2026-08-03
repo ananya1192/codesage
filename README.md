@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧠 CodeSage
+#  CodeSage
 
 ### AI-Powered GitHub Pull Request Review Platform
 
