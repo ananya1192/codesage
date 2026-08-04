@@ -35,7 +35,7 @@ export async function getContributionStats() {
             week.contributionDays.map((day: any) => ({
                 date: day.date,
                 count: day.contributionCount,
-                level: Math.min(4, Math.floor(day.contributionCount / 3)), // Convert to 0-4 scale
+                level: day.contributionCount > 0 ? 4 : 0
             }))
         )
 

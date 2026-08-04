@@ -4,6 +4,7 @@ import { ActivityCalendar } from "react-activity-calendar";
 import { useTheme } from "next-themes";
 import { useQuery } from "@tanstack/react-query";
 import { getContributionStats } from "@/module/dashboard/actions";
+import { Tooltip } from "@/components/ui/tooltip";
 
 const ContributionGraph = () => {
   const { theme } = useTheme();
@@ -44,27 +45,26 @@ return (
 
     <div className="w-full overflow-x-auto">
       <div className="flex justify-center min-w-max px-4">
-        <ActivityCalendar
-          data={data.contributions}
-          colorScheme={theme === "dark" ? "dark" : "light"}
-          blockSize={11}
-          blockMargin={4}
-          fontSize={14}
-          showWeekdayLabels
-          showMonthLabels
-       
-
-            theme={{
-  light: [
-    "#ebedf0",
-    "#216e39",
-  ],
-  dark: [
-    "#161b22",
-    "#39d353",
-  ],
-}}
-        />
+       <ActivityCalendar
+  data={data.contributions}
+  colorScheme={theme === "dark" ? "dark" : "light"}
+  blockSize={11}
+  blockMargin={4}
+  fontSize={14}
+  showWeekdayLabels
+  showMonthLabels
+  theme={{
+    light: ["hsl(0, 0%, 92%)", "hsl(142, 71%, 45%)"],
+    dark: ["#161b22", "hsl(142, 71%, 45%)"],
+  }}
+  labels={{
+    totalCount: "{{count}} contributions in the last year",
+    legend: {
+      less: "Less",
+      more: "More",
+    },
+  }}
+/>
       </div>
     </div>
   </div>

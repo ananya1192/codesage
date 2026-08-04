@@ -76,7 +76,22 @@ export async function fetchUserContribution(
       username,
     });
 
-    return response.user.contributionsCollection.contributionCalendar;
+    const calendar =
+      response.user.contributionsCollection.contributionCalendar;
+
+    const yearTotals: Record<string, number> = {};
+
+    calendar.weeks.forEach((week) => {
+      week.contributionDays.forEach((day) => {
+        const year = day.date.slice(0, 4);
+        yearTotals[year] = (yearTotals[year] || 0) + day.contributionCount;
+      });
+    });
+
+    console.log("Total Contributions:", calendar.totalContributions);
+    console.log("Year Totals:", yearTotals);
+
+    return calendar;
   } catch (error) {
     console.error(error);
     throw error;
