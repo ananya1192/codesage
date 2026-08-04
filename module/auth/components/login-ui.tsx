@@ -68,7 +68,7 @@ const LoginUI=() => {
         callbackURL: "/dashboard",
       })
     }
-    className="font-semibold text-primary hover:text-primary-foreground"
+    className="font-semibold text-primary hover:underline"
   >
     Continue with Github
   </button>
